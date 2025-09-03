@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulador de Gestión de Procesos y Memoria</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-left">
+                <h1><i class="fas fa-microchip"></i> Simulador de Gestión de Procesos y Memoria</h1>
+                <p class="header-subtitle">Sistema de Planificación Round Robin con Gestión de Memoria</p>
+            </div>
+            <div class="header-stats">
+                <div class="stat-item">
+                    <i class="fas fa-clock"></i>
+                    <span>Tick: <span id="tick-counter">0</span></span>
+                </div>
+                <div class="stat-item">
+                    <i class="fas fa-microchip"></i>
+                    <span>Procesos: <span id="process-count">0</span></span>
+                    </div>
+                <div class="stat-item">
+                    <i class="fas fa-memory"></i>
+                    <span>Memoria: <span id="memory-usage">0/1024 KB</span></span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Controls Section -->
+        <section class="controls-section">
+            <div class="controls-container">
+                <div class="control-group">
+                <button id="start-btn" class="btn btn-primary" onclick="toggleSimulation()">
+                        <i class="fas fa-play"></i> Iniciar Simulación
+                </button>
+
+                <button class="btn btn-danger" onclick="resetSimulation()">
+                        <i class="fas fa-redo"></i> Reiniciar
+                    </button>
+                </div>
+                <div class="control-group">
+                    <button class="btn btn-success" onclick="addRandomProcess()">
+                        <i class="fas fa-plus"></i> Proceso Aleatorio
+                    </button>
+                    <button class="btn btn-info" onclick="createManualProcess()">
+                        <i class="fas fa-user-plus"></i> Proceso Manual
+                </button>
+                </div>
+            </div>
+        </section>
+
+                <!-- Main Content -->
+        <main class="main-content">
+            <!-- New Layout: Priority Left + Medium Squares Right -->
+            <div class="new-layout">
+                <!-- Left Side: Priority Cards (Memory and Processes) -->
+                <div class="priority-section">
+                    <!-- Memory Priority Card (Unified) -->
+                    <div class="dashboard-card memory-priority-card">
+                    <div class="card-header">
+                            <h3><i class="fas fa-memory"></i> Memoria</h3>
+                            <i class="fas fa-chart-pie card-icon"></i>
+                    </div>
+                    <div class="card-content">
+                            <div class="memory-main-info">
+                                <div class="big-number" id="memory-usage-percent">0%</div>
+                                <div class="small-text" id="memory-usage-detail">0/1024 KB</div>
+                            </div>
+                            <canvas id="memory-canvas" width="300" height="60"></canvas>
+                            <div class="memory-details">
+                                <div class="memory-item">
+                                    <span class="memory-label">Libre:</span>
+                                    <span class="memory-value" id="memory-free-display">1024 KB</span>
+                                </div>
+                                <div class="memory-item">
+                                    <span class="memory-label">Fragmentación:</span>
+                                    <span class="memory-value" id="memory-fragmentation">0%</span>
+                                </div>
+                            </div>
+                            <div class="memory-legend">
+                                <div class="legend-item">
+                                    <div class="legend-color" style="background: #9c27b0;"></div>
+                                    <span>Asignada</span>
+                                </div>
+                                <div class="legend-item">
+                                    <div class="legend-color" style="background: #e0e0e0;"></div>
+                                    <span>Libre</span>
+                                </div>
+                        </div>
+                    </div>
+                </div>
+
+                    <!-- Process Table Widget -->
+                    <div class="process-table-widget">
+                        <div class="process-table-container">
+                            <table class="process-table" id="process-table">
+                                <thead>
+                                    <tr>
+                                        <th>PID</th>
+                                        <th>Estado</th>
+                                        <th>Memoria</th>
+                                        <th>CPU</th>
+                                        <th>Quantum</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="process-table-body">
+                                    <!-- Los procesos se mostrarán aquí -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Side: Medium Square Cards -->
+                <div class="squares-section">
+                    <!-- Statistics Card -->
+                    <div class="dashboard-card stats-card-medium">
+                    <div class="card-header">
+                            <h3><i class="fas fa-chart-bar"></i> Estadísticas</h3>
+                            <button class="btn-icon" onclick="toggleStatsView()" id="stats-toggle-btn" title="Expandir">
+                                <i class="fas fa-expand"></i>
+                        </button>
+                    </div>
+                        <div class="card-content">
+                            <div class="stats-preview">
+                                <div class="stat-item-small">
+                                    <span class="stat-label">Tiempo Total:</span>
+                                    <span id="total-time-value">0s</span>
+                                </div>
+                                <div class="stat-item-small">
+                                    <span class="stat-label">Procesos Completados:</span>
+                                    <span id="completed-processes-value">0</span>
+                                </div>
+                                <div class="stat-item-small">
+                                    <span class="stat-label">Tiempo Promedio:</span>
+                                    <span id="avg-time-value">0s</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Configuration + CPU Card -->
+                    <div class="dashboard-card config-cpu-card-medium">
+                        <div class="card-header">
+                            <h3><i class="fas fa-cog"></i> Configuración & CPU</h3>
+                            <button class="btn-icon" onclick="toggleConfigView()" id="config-toggle-btn" title="Expandir">
+                                <i class="fas fa-expand"></i>
+                            </button>
+                                </div>
+                        <div class="card-content">
+                            <div class="cpu-section">
+                                <div class="big-number" id="cpu-utilization">0%</div>
+                                <div class="small-text">Utilización CPU</div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" id="cpu-progress" style="width: 0%"></div>
+                                </div>
+                            </div>
+                            <div class="config-section">
+                                <div class="config-item-small">
+                                    <span class="config-label">Auto:</span>
+                                    <span id="auto-gen-value">40%</span>
+                                </div>
+                                <div class="config-item-small">
+                                    <span class="config-label">Tick:</span>
+                                    <span id="tick-speed-value">500ms</span>
+                                </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                    <!-- Create Process Card -->
+                    <div class="dashboard-card create-process-card-medium">
+                        <div class="card-header">
+                            <h3><i class="fas fa-user-plus"></i> Crear Proceso</h3>
+                            </div>
+                        <div class="card-content">
+                            <div class="form-group">
+                                <label>Memoria (KB)</label>
+                                <input type="number" id="mem-requirement" min="20" max="300" value="100">
+                            </div>
+                            <div class="form-group">
+                                <label>CPU Burst</label>
+                                <input type="number" id="cpu-burst" min="3" max="15" value="8">
+                            </div>
+                            <button class="btn btn-primary" onclick="createManualProcess()">
+                                <i class="fas fa-plus"></i> Crear
+                            </button>
+                    </div>
+                </div>
+
+                    <!-- Logs Card -->
+                    <div class="dashboard-card logs-card-medium">
+                    <div class="card-header">
+                        <h3><i class="fas fa-terminal"></i> Logs</h3>
+                            <div class="card-actions">
+                                <button class="btn-icon" onclick="clearLogs()" title="Limpiar Logs">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                                <button class="btn-icon" onclick="toggleLogsView()" id="logs-toggle-btn" title="Expandir Logs">
+                                    <i class="fas fa-expand"></i>
+                        </button>
+                            </div>
+                    </div>
+                    <div class="card-content">
+                            <div class="log-content" id="log-content">
+                                <!-- Log entries will be inserted here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Modal para vista expandida de procesos -->
+        <div id="process-modal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3><i class="fas fa-list"></i> Todos los Procesos</h3>
+                    <button class="close-modal" onclick="closeProcessModal()">
+                        <i class="fas fa-times"></i>
+                            </button>
+                </div>
+                <div class="modal-body">
+                    <table class="process-table">
+                        <thead>
+                            <tr>
+                                <th>PID</th>
+                                <th>Estado</th>
+                                <th>Memoria (KB)</th>
+                                <th>CPU Total</th>
+                                <th>CPU Restante</th>
+                                <th>Quantum</th>
+                                <th>I/O Restante</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="process-table-body">
+                            <!-- Process rows will be inserted here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal para estadísticas expandidas -->
+        <div id="stats-modal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3><i class="fas fa-chart-line"></i> Estadísticas Detalladas</h3>
+                    <button class="close-modal" onclick="closeStatsModal()">
+                        <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                <div class="modal-body">
+                    <div class="detailed-stats">
+                        <div class="stat-detail">
+                            <h4>Estadísticas de Procesos</h4>
+                            <div class="state-stats">
+                                <div class="state-stat-item">
+                                    <span class="state-label">Throughput:</span>
+                                    <span id="throughput">0.00</span>
+                                </div>
+                                <div class="state-stat-item">
+                                    <span class="state-label">Tiempo Respuesta Promedio:</span>
+                                    <span id="avg-response-time">0 ticks</span>
+                                </div>
+                                <div class="state-stat-item">
+                                    <span class="state-label">Procesos Completados:</span>
+                                    <span id="completed-processes">0</span>
+                                </div>
+                                <div class="state-stat-item">
+                                    <span class="state-label">Tasa de Éxito:</span>
+                                    <span id="success-rate">0%</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="stat-detail">
+                            <h4>Rendimiento del Sistema</h4>
+                            <div class="performance-stats">
+                                <div class="perf-stat-item">
+                                    <span class="perf-label">Fragmentación Memoria:</span>
+                                    <span id="memory-fragmentation">0%</span>
+                                </div>
+                                <div class="perf-stat-item">
+                                    <span class="perf-label">Bloques de Memoria:</span>
+                                    <span id="memory-blocks">0</span>
+                                </div>
+                                <div class="perf-stat-item">
+                                    <span class="perf-label">Memoria Libre:</span>
+                                    <span id="memory-free">1024 KB</span>
+                                </div>
+                                <div class="perf-stat-item">
+                                    <span class="perf-label">Memoria Usada:</span>
+                                    <span id="memory-used">0 KB</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                            </div>
+                        </div>
+                        
+        <!-- Modal para configuración expandida -->
+        <div id="config-modal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3><i class="fas fa-cog"></i> Configuración Avanzada</h3>
+                    <button class="close-modal" onclick="closeConfigModal()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="config-container">
+                        <div class="config-item">
+                            <label>Probabilidad de Auto-generación:</label>
+                            <div class="config-control">
+                                <input type="range" id="auto-gen-prob-modal" min="0" max="1" step="0.1" value="0.4">
+                                <span id="auto-gen-value-modal">40%</span>
+                            </div>
+                        </div>
+                        <div class="config-item">
+                            <label>Velocidad de Tick (ms):</label>
+                            <div class="config-control">
+                                <input type="range" id="tick-speed-modal" min="100" max="2000" step="100" value="500">
+                                <span id="tick-speed-value-modal">500ms</span>
+                            </div>
+                        </div>
+                        <div class="config-item">
+                            <label>Quantum de Tiempo:</label>
+                            <div class="config-control">
+                                <input type="range" id="quantum-modal" min="1" max="10" step="1" value="3">
+                                <span id="quantum-value-modal">3</span>
+                            </div>
+                        </div>
+                        <div class="config-item">
+                            <label>Probabilidad de I/O:</label>
+                            <div class="config-control">
+                                <input type="range" id="io-prob-modal" min="0" max="0.5" step="0.05" value="0.15">
+                                <span id="io-prob-value-modal">15%</span>
+                            </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+        <!-- Modal para logs expandidos -->
+        <div id="logs-modal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3><i class="fas fa-terminal"></i> Logs del Sistema</h3>
+                    <div class="modal-actions">
+                        <button class="btn btn-sm btn-warning" onclick="clearLogs()">
+                            <i class="fas fa-trash"></i> Limpiar
+                        </button>
+                        <button class="close-modal" onclick="closeLogsModal()">
+                            <i class="fas fa-times"></i>
+                        </button>
+                                    </div>
+                                </div>
+                <div class="modal-body">
+                    <div class="log-container">
+                        <div class="log-content" id="log-content-modal">
+                            <!-- Log entries will be inserted here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Toast -->
+    <div id="toast" class="toast">
+        <div class="toast-content">
+            <i class="toast-icon"></i>
+            <span class="toast-message"></span>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
+
