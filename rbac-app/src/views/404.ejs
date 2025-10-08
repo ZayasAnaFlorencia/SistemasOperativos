@@ -1,0 +1,8 @@
+<% const page = { title: '404 - No encontrado' }; %>
+<%- include('layout', { title: page.title, body: `
+  <section class='card'>
+    <h2>404 - No encontrado</h2>
+    <p>La página solicitada no existe.</p>
+    <p><a href='/dashboard'>Volver</a></p>
+  </section>
+` }) %>

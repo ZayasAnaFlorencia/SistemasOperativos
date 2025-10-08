@@ -1,0 +1,26 @@
+<% const page = { title: 'Panel Principal' }; %>
+<%- include('layout', { title: page.title, body: `
+  <section class='grid'>
+    <div class='card'>
+      <h2>Acciones disponibles</h2>
+      <ul>
+        <li><a href='/lectura'>Lectura</a></li>
+        <li><a href='/edicion'>Edición</a></li>
+        <li><a href='/aprobacion'>Aprobación</a></li>
+        <li><a href='/decision'>Decisión</a></li>
+        <li><a href='/control'>Control</a></li>
+        <li><a href='/admin'>Administración del Sistema</a></li>
+      </ul>
+    </div>
+
+    <div class='card'>
+      <h2>Permisos de tu rol</h2>
+      <p><strong>Rol:</strong> <%= user?.rol %></p>
+      <ul>
+        <% (user?.permisos || []).forEach(p => { %>
+          <li><code><%= p %></code></li>
+        <% }) %>
+      </ul>
+    </div>
+  </section>
+` }) %>

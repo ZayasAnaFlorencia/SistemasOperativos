@@ -1,0 +1,8 @@
+<% const page = { title: '403 - Prohibido' }; %>
+<%- include('layout', { title: page.title, body: `
+  <section class='card error'>
+    <h2>403 - Acceso prohibido</h2>
+    <p>No cuentas con permisos suficientes para esta función.</p>
+    <p><a href='/dashboard'>Volver</a></p>
+  </section>
+` }) %>

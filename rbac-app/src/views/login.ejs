@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login - RBAC</title>
+  <link rel="stylesheet" href="/css/app.css" />
+</head>
+<body>
+  <div class="container">
+    <h1>Sistema de Login con Control de Acceso por Rol</h1>
+    <form action="/login" method="post" class="card">
+      <label>
+        Usuario
+        <input type="text" name="nombre" required />
+      </label>
+      <label>
+        Clave
+        <input type="password" name="clave" required />
+      </label>
+      <% if (error) { %>
+      <div class="error"><%= error %></div>
+      <% } %>
+      <button type="submit">Ingresar</button>
+    </form>
+  </div>
+</body>
+</html>
