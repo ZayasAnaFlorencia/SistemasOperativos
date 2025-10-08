@@ -1,0 +1,8 @@
+<% const page = { title }; %>
+<%- include('layout', { title: page.title, body: `
+  <section class='card'>
+    <h2>${title}</h2>
+    <p>${body}</p>
+    <p><a href='/dashboard'>Volver</a></p>
+  </section>
+` }) %>
